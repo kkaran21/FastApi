@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from .. import models,schemas,oauth2
 from ..database import  get_db
 from typing import List, Optional
-from fastapi import Depends,Response,status,HTTPException,APIRouter
+from fastapi import Depends,Response,status,HTTPException,APIRouter,UploadFile
 
 
 router=APIRouter(
@@ -11,6 +11,8 @@ router=APIRouter(
     tags=["Posts"]
 
 )
+
+DIRECTORY="D:\\apimedia"
 
 # using orm sqlalchemy
 @router.get("/",response_model=list[schemas.postResponseV2])
@@ -90,3 +92,14 @@ def update_post(id:int,post:schemas.postBase,db:Session=Depends(get_db),verify_t
      db.commit()
      
      return result.first()
+
+
+@router.post("/upload")
+async def upload(file:UploadFile,db:Session=Depends(get_db)):
+    contents=await file.read()
+    full_path = f"{DIRECTORY}\{file.filename}"
+    with open(full_path,"wb+") as f:
+        f.write(contents)
+    db.query(models.post)
+        
+    return {'filename':'uploaded successfully'}
